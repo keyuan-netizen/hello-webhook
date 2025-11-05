@@ -24,21 +24,23 @@ app.use((err, req, res, next) => {
 app.post('/', async (req, res) => {
   const { provider, prompt, metadata } = req.body || {};
 
-  const normalizedProvider = typeof provider === 'string' ? provider.trim().toLowerCase() : '';
   const cleanedPrompt = typeof prompt === 'string' ? prompt.trim() : '';
-
-  if (!normalizedProvider) {
-    return res.status(400).json({ error: 'Missing provider. Expected one of: claude, xai' });
-  }
+  const rawProvider = typeof provider === 'string' ? provider.trim() : '';
+  const requestedProvider = rawProvider.toLowerCase();
+  const normalizedProvider =
+    rawProvider === '' ? 'xai' : Object.prototype.hasOwnProperty.call(PROVIDERS, requestedProvider) ? requestedProvider : null;
 
   if (!cleanedPrompt) {
     return res.status(400).json({ error: 'Missing prompt text to translate.' });
   }
 
-  const translator = PROVIDERS[normalizedProvider];
-  if (!translator) {
-    return res.status(400).json({ error: `Unsupported provider "${provider}". Use one of: ${Object.keys(PROVIDERS).join(', ')}` });
+  if (!normalizedProvider) {
+    return res.status(400).json({
+      error: `Unsupported provider "${rawProvider}". Use one of: ${Object.keys(PROVIDERS).join(', ')}.`
+    });
   }
+
+  const translator = PROVIDERS[normalizedProvider];
 
   try {
     const translation = await translator({
@@ -70,7 +72,7 @@ async function translateWithXai({ prompt, metadata }) {
     throw createConfigError('XAI_API_KEY', 'xAI');
   }
 
-  const model = process.env.XAI_MODEL || 'grok-beta';
+  const model = process.env.XAI_MODEL || 'grok-1';
   const response = await fetch('https://api.x.ai/v1/chat/completions', {
     method: 'POST',
     headers: {
