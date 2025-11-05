@@ -8,7 +8,7 @@ Accepts translation jobs and relays them to either xAI or Claude before replying
 
 - **Endpoint:** `POST /`
 - **Request JSON:** `{ "provider": "claude" | "xai", "prompt": "text to translate", "metadata": { ... } }`
-- **Successful response:** `{ "translation": "translated text" }`
+- **Successful response:** `{ "translation": "translated text", "prompt": "prompt text (trimmed)" }`
 - **Error response:** `{ "error": "message" }` with an appropriate status code.
 
 `metadata` is optional and forwarded to the model as additional context.
@@ -44,6 +44,14 @@ Send a test request:
 curl -s http://localhost:3000/ \
   -H "Content-Type: application/json" \
   -d '{"provider":"claude","prompt":"Translate to Tradition Chinese: Hello, world!","metadata":{"docId":"abc"}}'
+
+curl -s https://hello-webhook.onrender.com \
+  -H "Content-Type: application/json" \
+  -d '{"provider":"claude","prompt":"Translate to Traditional Chinese: mother!","metadata":{"docId":"abc"}}'
+
+curl -s https://hello-webhook.onrender.com \
+  -H "Content-Type: application/json" \
+  -d '{"provider":"claude","prompt":"Translate to simplied Chinese: mother!","metadata":{"docId":"abc"}}'
 ```
 
 ## Deploy to Render
@@ -80,7 +88,10 @@ function translateViaWebhook(promptText) {
   if (!body.translation) {
     throw new Error(body.error || 'Translation failed');
   }
-  return body.translation;
+  return {
+    translation: body.translation,
+    prompt: body.prompt
+  };
 }
 ```
 

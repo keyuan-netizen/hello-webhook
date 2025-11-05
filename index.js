@@ -45,7 +45,7 @@ app.post('/', async (req, res) => {
       prompt: cleanedPrompt,
       metadata: metadata || {}
     });
-    res.json({ translation });
+    res.json({ translation, prompt: cleanedPrompt });
   } catch (err) {
     console.error(`[${normalizedProvider}] translation error`, err);
     const status = err.statusCode && Number.isInteger(err.statusCode) ? err.statusCode : 502;
