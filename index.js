@@ -72,7 +72,7 @@ async function translateWithXai({ prompt, metadata }) {
     throw createConfigError('XAI_API_KEY', 'xAI');
   }
 
-  const model = process.env.XAI_MODEL || 'grok-1';
+  const model = process.env.XAI_MODEL || 'grok-3-mini';
   const response = await fetch('https://api.x.ai/v1/chat/completions', {
     method: 'POST',
     headers: {
